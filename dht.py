@@ -1,8 +1,8 @@
 import os
 
-from ds_hw1_dht_parser import init_parser
-from ds_hw1_dht_printing import *
-from ds_hw1_dht_ring import Ring
+from utils.parser import init_parser
+from utils.printing import *
+from utils.ring import Ring
 
 
 KEYWORD_KEY_SPACE = "#key-space"
@@ -36,29 +36,20 @@ def parse_ring_description(lines: [str]) -> ((int, int), [int], [(int, int)]):
         key_start, key_end = find_description_line(KEYWORD_KEY_SPACE).split(",")
         return int(key_start.strip()), int(key_end.strip())
 
-    def parse_node_values(key_min: int, key_max: int) -> [int]:
+    def parse_node_values() -> [int]:
         values_str: [str] = find_description_line(KEYWORD_NODES).split(",")
 
         if len(values_str) == 0:
             print_error_and_stop("At least one node value is required!")
 
-        output: [int] = []
-
-        for value in map(int, values_str):
-            if key_min <= value <= key_max:
-                output.append(value)
-            else:
-                print_warning(f"Node value {value} is out of key-space! Discarding...")
-
-        return output
+        return list(map(int, values_str))
 
     def parse_shortcuts() -> [(int, int)]:
         return [(int(start.strip()), int(end.strip()))
                 for start, end in [pair.split(":")
                                    for pair in find_description_line(KEYWORD_SHORTCUTS).split(",")]]
 
-    ks_start, ks_end = parse_key_space()
-    return (ks_start, ks_end), parse_node_values(ks_start, ks_end), parse_shortcuts()
+    return parse_key_space(), parse_node_values(), parse_shortcuts()
 
 
 def program_loop(ring: Ring):

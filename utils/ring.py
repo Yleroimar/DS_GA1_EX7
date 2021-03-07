@@ -1,5 +1,5 @@
-from ds_hw1_dht_node import Node
-from ds_hw1_dht_printing import print_error, print_warning
+from utils.node import Node
+from utils.printing import print_error, print_warning
 
 
 class Ring:
@@ -12,7 +12,13 @@ class Ring:
         self.add_shortcuts(shortcuts)
 
     def create_nodes_and_assign_successors(self, node_values: [int]) -> [Node]:
-        nodes: [Node] = [Node(value, self.ks_start, self.ks_end) for value in sorted(node_values)]
+        nodes: [Node] = []
+
+        for value in sorted(node_values):
+            if self.ks_start <= value <= self.ks_end:
+                nodes.append(Node(value, self.ks_start, self.ks_end))
+            else:
+                print_warning(f"Node value {value} is out of key-space! Discarding...")
 
         for node, successor, successor2 in zip(nodes, nodes[1:] + nodes[:1], nodes[2:] + nodes[:2]):
             node.set_successors(successor, successor2)

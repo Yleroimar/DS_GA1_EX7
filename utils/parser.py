@@ -1,5 +1,5 @@
-from ds_hw1_dht_printing import print_warning, print_error
-from ds_hw1_dht_ring import Ring
+from utils.printing import print_warning, print_error
+from utils.ring import Ring
 
 
 def initialize_commands(ring: Ring) -> {str, callable}:
@@ -43,7 +43,7 @@ def initialize_commands(ring: Ring) -> {str, callable}:
     command_to_implementation["Leave"] = leave
 
     def remove(args_part: str):
-        nodes_leaving = [int(value_str) for value_str in args_part.split(",")]
+        nodes_leaving = [int(value_str.strip()) for value_str in args_part.split(",")]
 
         if len(ring.nodes) <= len(nodes_leaving):
             print_error("Removing cannot be performed,"
