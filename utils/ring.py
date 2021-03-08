@@ -1,5 +1,5 @@
 from utils.node import Node
-from utils.printing import print_error, print_warning
+from utils.printing import print_error, print_warning, print_error_and_stop
 
 
 class Ring:
@@ -12,6 +12,10 @@ class Ring:
         self.add_shortcuts(shortcuts)
 
     def create_nodes_and_assign_successors(self, node_values: [int]) -> [Node]:
+        if len(node_values) == 0:
+            print_error_and_stop("No node values provided!"
+                                 " Ring requires at least one node value for initialization!")
+
         nodes: [Node] = []
 
         for value in sorted(node_values):
@@ -118,13 +122,32 @@ class Ring:
 
     def leave(self, node_values: [int]):
         """ Covers both the case where a single node leaves and where multiple nodes leave. """
-        nodes_leaving = []
 
-        for node_value in node_values:
-            if node_value not in self.nodes:
-                print_warning(f"Node with value {node_value} has already left or is leaving twice.")
+        checked = set()
+        for value in node_values:
+            if not self.ks_start <= value <= self.ks_end:
+                print_warning(f"Node value {value} is outside of the key-space."
+                              f" Discarding value...")
                 continue
 
+            if value not in self.nodes:
+                print_warning(f"Node with value {value} has already left.")
+                continue
+
+            checked.add(value)
+
+        n_leaving = len(checked)
+
+        if n_leaving < len(node_values):
+            print_warning("Some nodes have requested to leave more than once...")
+
+        if len(self.nodes) <= n_leaving:
+            print_error("Nodes cannot leave, less than one would remain.")
+            return
+
+        nodes_leaving = []
+
+        for node_value in checked:
             nodes_leaving.append(node := self.nodes[node_value])
             node.prepare_to_leave()
             self.nodes.pop(node_value)

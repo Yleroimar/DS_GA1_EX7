@@ -61,8 +61,8 @@ class Node:
         return self.successor.lookup(target_key, n_requests + 1)
 
     def __str__(self) -> str:
-        shortcuts = ",".join(str(node.value) for node in self.finger_table)
-        return f"{self.value}:{shortcuts}, S-{self.successor.value}, NS-{self.successor_next.value}"
+        return self.__repr__()
 
     def __repr__(self) -> str:
-        return self.__str__()
+        shortcuts = ",".join(str(node.value) for node in self.finger_table)
+        return f"{self.value}:{shortcuts}, S-{self.successor.value}, NS-{self.successor_next.value}"
