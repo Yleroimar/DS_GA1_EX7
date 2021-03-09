@@ -50,53 +50,24 @@ class Ring:
 
         return self.nodes[starting_value].lookup(target_key)
 
-    def find_preceding_node(self, node: Node) -> Node:
-        nodes_sorted: [Node] = [r for _, r in sorted(self.nodes.items(), key=lambda pair: pair[0])]
-
-        previous: Node = nodes_sorted[-1]
-        while True:
-            successor: Node = previous.successor
-
-            if node.value <= successor.value:
-                break
-
-            previous = successor
-
-        return previous
-
     def find_proceeding_node(self, node: Node) -> Node:
-        proceeding_node = self.find_preceding_node(node).successor
-        return proceeding_node.successor if node == proceeding_node else proceeding_node
-
-    def find_predecessors(self, node: Node) -> (Node, Node):
         """
-        :param node: successor of the returned predecessors. Can be absent from the ring.
-        :return: the non-leaving next predecessor and predecessor. Skips predecessors until found.
+        **NB! Functionality breaks if there is a node with invalid successor references.**
+
+        :param node: node for which we are finding the (would-be) proceeding node.
+        :return: the node that proceeds or would proceed the given node.
         """
-        predecessor = self.find_preceding_node(node)
-        while predecessor.is_leaving:
-            predecessor = self.find_preceding_node(predecessor)
+        current: Node = min(self.nodes.values())
 
-        predecessor_next = self.find_preceding_node(predecessor)
-        while predecessor_next.is_leaving:
-            predecessor_next = self.find_preceding_node(predecessor_next)
+        while current <= node:
+            successor: Node = current.successor
 
-        return predecessor_next, predecessor
+            if successor <= current:
+                return successor
 
-    def find_successors(self, node: Node) -> (Node, Node):
-        """
-        :param node: predecessor of the returned successors. Can be absent from the ring.
-        :return: the non-leaving successor and next successor. Skips successors until found.
-        """
-        successor = self.find_proceeding_node(node)
-        while successor.is_leaving:
-            successor = successor.successor
+            current = successor
 
-        successor_next = successor.successor
-        while successor_next.is_leaving:
-            successor_next = successor_next.successor
-
-        return successor, successor_next
+        return current
 
     def join(self, node_value: int):
         if not self.ks_start <= node_value <= self.ks_end:
@@ -111,19 +82,15 @@ class Ring:
 
         new_node = Node(node_value, self.ks_start, self.ks_end)
 
+        new_node.refresh_successors_join(self.find_proceeding_node(new_node))
+
         self.nodes[node_value] = new_node
-
-        successor, successor_next = self.find_successors(new_node)
-        predecessor_next, predecessor = self.find_predecessors(new_node)
-
-        new_node.set_successors(successor, successor_next)
-        predecessor.set_successors(new_node, successor)
-        predecessor_next.set_successors(predecessor, new_node)
 
     def leave(self, node_values: [int]):
         """ Covers both the case where a single node leaves and where multiple nodes leave. """
 
-        checked = set()
+        nodes_leaving: {Node} = set()
+
         for value in node_values:
             if not self.ks_start <= value <= self.ks_end:
                 print_warning(f"Node value {value} is outside of the key-space."
@@ -134,9 +101,13 @@ class Ring:
                 print_warning(f"Node with value {value} has already left.")
                 continue
 
-            checked.add(value)
+            nodes_leaving.add(value)
 
-        n_leaving = len(checked)
+        n_leaving: int = len(nodes_leaving)
+
+        if n_leaving == 0:
+            print_warning("All leaving nodes have already left or are not in the key-space.")
+            return
 
         if n_leaving < len(node_values):
             print_warning("Some nodes have requested to leave more than once...")
@@ -145,27 +116,13 @@ class Ring:
             print_error("Nodes cannot leave, less than one would remain.")
             return
 
-        nodes_leaving = []
+        chain_start: Node = self.nodes[list(nodes_leaving)[0]]
 
-        for node_value in checked:
-            nodes_leaving.append(node := self.nodes[node_value])
-            node.prepare_to_leave()
-            self.nodes.pop(node_value)
+        for node_value in nodes_leaving:
+            self.nodes.pop(node_value).prepare_to_leave()
 
-        for node in nodes_leaving:
-            successor, successor_next = self.find_successors(node)
-
-            if node == successor_next:
-                successor.set_successors(successor, successor)
-                self.remove_shortcuts_to(node)
-                continue
-
-            predecessor_next, predecessor = self.find_predecessors(node)
-
-            predecessor_next.set_successors(predecessor, successor)
-            predecessor.set_successors(successor, successor_next)
-
-            self.remove_shortcuts_to(node)
+        (chain_start := chain_start.get_non_leaving_successor()) \
+            .refresh_refs_leave(chain_start.get_non_leaving_successor())
 
     def remove_shortcuts_to(self, node: Node):
         for from_node in self.nodes.values():
