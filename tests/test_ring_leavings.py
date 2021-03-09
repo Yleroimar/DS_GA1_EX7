@@ -6,6 +6,7 @@ from utils.ring import Ring
 
 
 class TestRingLeavings(AddedAsserts):
+
     @unittest.expectedFailure
     def testLeaving00_fail(self):
         self.assertRingLeave(

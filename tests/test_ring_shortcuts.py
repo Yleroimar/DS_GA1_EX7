@@ -4,6 +4,7 @@ from utils.ring import Ring
 
 
 class TestRingShortcuts(AddedAsserts):
+
     def testShortcuts99_example(self):
         self.assertRingShortcut(
                 Ring(1, 100, [7, 17, 22, 56, 71, 89, 92], [(22, 89)]),

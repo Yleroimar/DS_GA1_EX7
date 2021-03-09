@@ -4,6 +4,7 @@ from utils.ring import Ring
 
 
 class TestRingJoins(AddedAsserts):
+
     def testJoins01(self):
         ring = Ring(1, 10, [5], [])
 

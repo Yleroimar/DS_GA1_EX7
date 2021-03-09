@@ -7,7 +7,9 @@ from utils.ring import Ring
 class TestRingProceedingNode(AddedAsserts):
 
     def assertFindingProceedingNode(self, ring: Ring, node_value: int, expected_value: int = None):
-        proceeding = ring.find_proceeding_node(Node(node_value, ring.ks_start, ring.ks_end))
+        proceeding = ring.find_proceeding_node(Node(node_value,
+                                                    ring.get_key_space_start(),
+                                                    ring.get_key_space_end()))
 
         if expected_value is None:
             self.assertIsNone(proceeding)

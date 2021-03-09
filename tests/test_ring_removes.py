@@ -4,6 +4,7 @@ from utils.ring import Ring
 
 
 class TestRingRemoves(AddedAsserts):
+
     def testRemoves01_single(self):
         self.assertRingRemove(
                 Ring(1, 100, [7, 17, 22, 56, 71, 89, 92], [(7, 22), (22, 89)]),

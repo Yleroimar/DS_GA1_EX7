@@ -8,13 +8,13 @@ class Node:
         self.value: int = value
         self.is_leaving: bool = False
 
-        self.ks_min: int = ks_min
-        self.ks_max: int = ks_max
+        self.__ks_min: int = ks_min
+        self.__ks_max: int = ks_max
 
         self.successor: Node = self
         self.successor_next: Node = self
 
-        self.keys_start: int = self.__set_keys_start(self)
+        self.__keys_start: int = self.__set_keys_start(self)
 
         self.finger_table: [Node] = []
 
@@ -22,24 +22,28 @@ class Node:
         self.is_leaving = True
 
     def __set_keys_start(self, predecessor) -> int:
-        self.keys_start = predecessor.value + 1
+        self.__keys_start = predecessor.value + 1
 
-        if self.ks_max < self.keys_start:
-            self.keys_start = self.ks_min
+        if self.__ks_max < self.__keys_start:
+            self.__keys_start = self.__ks_min
 
-        return self.keys_start
+        return self.__keys_start
 
-    def get_keys(self) -> [int]:
-        if self.keys_start < self.value:
-            return list(range(self.keys_start, self.value + 1))
+    def get_keys(self) -> {int}:
+        if self.__keys_start < self.value:
+            # return list(range(self.keys_start, self.value + 1))
+            return set(range(self.__keys_start, self.value + 1))
 
-        keys = (list(range(self.keys_start, self.ks_max + 1))
-                + list(range(self.ks_min, self.value + 1)))
+        return set(list(range(self.__keys_start, self.__ks_max + 1))
+                   + list(range(self.__ks_min, self.value + 1)))
 
-        if self.keys_start == self.value:
-            return keys[1:]  # to avoid the first and last element being the same
+        # keys: [int] = (list(range(self.keys_start, self.ks_max + 1))
+        #                + list(range(self.ks_min, self.value + 1)))
 
-        return keys
+        # if self.keys_start == self.value:
+        #     return set(keys[1:])  # to avoid the first and last element being the same
+        #
+        # return set(keys)
 
     def set_successors(self, successor, successor_next):
         self.__set_successor(successor)
@@ -67,7 +71,7 @@ class Node:
 
     def get_non_leaving_successor(self):
         """ :return: non-leaving successor node, possibly the node itself. """
-        successor = self.successor
+        successor: Node = self.successor
 
         while successor is not self and successor.is_leaving:
             successor = successor.successor
@@ -101,7 +105,6 @@ class Node:
         new_successor_next: Node = new_successor.get_non_leaving_successor()
 
         if new_successor_next is starting_node_successor:
-            self.__set_successor_next(starting_node)
             new_successor_next = starting_node
             starting_node_successor = None
 
@@ -145,7 +148,7 @@ class Node:
         return self.__repr__()
 
     def __repr__(self) -> str:
-        shortcuts = ",".join(str(node.value) for node in self.finger_table)
+        shortcuts: str = ",".join(str(node.value) for node in self.finger_table)
         return f"{self.value}:{shortcuts}, S-{self.successor.value}, NS-{self.successor_next.value}"
 
     def __eq__(self, other: Any) -> bool:

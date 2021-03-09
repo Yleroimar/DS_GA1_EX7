@@ -12,7 +12,7 @@ KEYWORD_SHORTCUTS = "#shortcuts"
 
 def read_ring_description(path: str) -> [str]:
     with open(path, "r", encoding="UTF-8") as f:
-        return [line.strip() for line in f.read().strip().split("\n")]
+        return f.read().split("\n")
 
 
 def parse_ring_description(lines: [str]) -> ((int, int), [int], [(int, int)]):
@@ -50,6 +50,27 @@ def parse_ring_description(lines: [str]) -> ((int, int), [int], [(int, int)]):
                                    for pair in find_description_line(KEYWORD_SHORTCUTS).split(",")]]
 
     return parse_key_space(), parse_node_values(), parse_shortcuts()
+
+
+def parse_ring_description_no_validation(lines: [str]) -> ((int, int), [int], [(int, int)]):
+    """
+    :param lines: lines from the ring description file (assumed to be correctly formatted).
+    :return: a triple of key-space start/end pair, node values and shortcuts
+    """
+
+    lines = [line
+             for line in [line.strip() for line in lines]
+             if 0 < len(line) and not line.startswith("#")]
+
+    key_min, key_max = [int(piece.strip()) for piece in lines[0].split(",")]
+
+    node_values = [int(piece.strip()) for piece in lines[1].split(",")]
+
+    shortcuts = [(int(source.strip(), int(target.strip())))
+                 for source, target in [piece.split(":")
+                                        for piece in lines[2].split(",")]]
+
+    return (key_min, key_max), node_values, shortcuts
 
 
 def program_loop(ring: Ring):

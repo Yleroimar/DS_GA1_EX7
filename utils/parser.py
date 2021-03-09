@@ -34,23 +34,12 @@ def initialize_commands(ring: Ring) -> {str, callable}:
     command_to_implementation["Join"] = join
 
     def leave(args_part: str):
-        if len(ring.nodes) <= 1:
-            print_error("Node cannot leave, because there would be less than one node remaining!")
-            return
-
         ring.leave([int(args_part)])
 
     command_to_implementation["Leave"] = leave
 
     def remove(args_part: str):
-        nodes_leaving = [int(value_str.strip()) for value_str in args_part.split(",")]
-
-        if len(ring.nodes) <= len(nodes_leaving):
-            print_error("Removing cannot be performed,"
-                        " because there would be less than one node remaining!")
-            return
-
-        ring.leave(nodes_leaving)
+        ring.leave([int(value_str.strip()) for value_str in args_part.split(",")])
 
     command_to_implementation["Remove"] = remove
 

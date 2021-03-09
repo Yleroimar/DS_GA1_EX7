@@ -1,11 +1,12 @@
-import unittest
-
 from tests.testing_utils.asserts import AddedAsserts
+
+import unittest
 
 from utils.ring import Ring
 
 
 class TestRingInits(AddedAsserts):
+
     @unittest.expectedFailure
     def testRingInit00_empty(self):
         self.assertRing(Ring(1, 10, [], []), "")
@@ -58,6 +59,14 @@ class TestRingInits(AddedAsserts):
     def testRingInit07(self):
         self.assertRing(
                 Ring(1, 10, [2, 5, 9], []),
+                "2:, S-5, NS-9",
+                "5:, S-9, NS-2",
+                "9:, S-2, NS-5"
+        )
+
+    def testRingInit08_keyspaceSpaceBound(self):
+        self.assertRing(
+                Ring(1, 9, [2, 5, 9], []),
                 "2:, S-5, NS-9",
                 "5:, S-9, NS-2",
                 "9:, S-2, NS-5"

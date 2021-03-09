@@ -37,3 +37,11 @@ class AddedAsserts(unittest.TestCase):
         self.assertEqual((result, result) if result is None else result,
                          (expected_node, expected_requests),
                          msg="Lookup results (node, requests)")
+
+    def assertNodeKeys(self, ring: Ring, node_value: int, expected_keys: {int}):
+        self.assertSetEqual(expected_keys, ring.get_node(node_value).get_keys(),
+                            msg=f"Keys of node with value {node_value}")
+
+    def assertRingKeys(self, ring: Ring, values_and_expected_keys: (int, {int})):
+        for value, expected_keys in values_and_expected_keys:
+            self.assertNodeKeys(ring, value, expected_keys)
