@@ -2,7 +2,7 @@ import random
 
 from tests.testing_utils.asserts import AddedAsserts
 
-from utils.node import Node
+from utils.node_old import Node
 
 
 class TestNodeComparing(AddedAsserts):

@@ -1,34 +1,19 @@
-from typing import Callable, Set
-
-from tests.testing_utils.asserts import AddedAsserts
+from tests.testing_utils.asserts import *
 
 from utils.ring import Ring
 
 
-KeySetConstructor = Callable[[int, int], Set[int]]
-
-
 class TestRingEverything(AddedAsserts):
-
-    @staticmethod
-    def initialize_key_set_constructor(ks_min: int, ks_max: int) -> KeySetConstructor:
-        def key_set_constructor(first: int, last: int) -> {int}:
-            if first <= last:
-                return set(range(first, last + 1))
-
-            return set(list(range(first, ks_max + 1)) + list(range(ks_min, last + 1)))
-
-        return key_set_constructor
 
     def testEverything99_example(self):
         ks_min = 1
         ks_max = 100
 
-        key_set = TestRingEverything.initialize_key_set_constructor(ks_min, ks_max)
+        key_set = init_key_set_constructor(ks_min, ks_max)
 
-        ring = Ring(ks_min, ks_max,
-                    [5, 17, 22, 56, 71, 89, 92],
-                    [(5, 56), (5, 71), (22, 89)])
+        ring = init_ring(ks_min, ks_max,
+                         [5, 56, 22, 17, 89, 71, 92, 110],
+                         [(5, 56), (5, 71), (22, 89)])
 
         self.assertRing(
                 ring,
@@ -122,17 +107,17 @@ class TestRingEverything(AddedAsserts):
             (92, key_set(90, 92)),
         ])
 
-        self.assertRingRemove(
-                ring, [17, 22, 56],
-                "7:, S-71, NS-89",
-                "71:, S-89, NS-92",
-                "89:, S-92, NS-7",
-                "92:, S-7, NS-71"
-        )
-
-        self.assertRingKeys(ring, [
-            (7, key_set(93, 7)),
-            (71, key_set(8, 71)),
-            (89, key_set(72, 89)),
-            (92, key_set(90, 92)),
-        ])
+        # self.assertRingRemove(
+        #         ring, [17, 22, 56],
+        #         "7:, S-71, NS-89",
+        #         "71:, S-89, NS-92",
+        #         "89:, S-92, NS-7",
+        #         "92:, S-7, NS-71"
+        # )
+        #
+        # self.assertRingKeys(ring, [
+        #     (7, key_set(93, 7)),
+        #     (71, key_set(8, 71)),
+        #     (89, key_set(72, 89)),
+        #     (92, key_set(90, 92)),
+        # ])

@@ -1,6 +1,6 @@
 import os
 
-from utils.parser import init_parser
+from utils.commands_parser import init_command_parser, CommandsParser
 from utils.printing import *
 from utils.ring import Ring
 
@@ -21,33 +21,55 @@ def parse_ring_description(lines: [str]) -> ((int, int), [int], [(int, int)]):
     :return: a triple of key-space start/end pair, node values and shortcuts
     """
 
-    def find_description_line(description_comment: str) -> str:
-        if description_comment not in lines:
-            print_error_and_stop(f"Input file is missing comment '{description_comment}'!")
 
-        i = lines.index(description_comment) + 1
+    def find_description_line(description_comment: str) -> str or None:
+        if description_comment not in lines:
+            return None
+
+        i: int = lines.index(description_comment) + 1
 
         if len(lines) <= i:
             print_error_and_stop(f"Missing description after comment '{description_comment}'!")
 
         return lines[i]
 
+
     def parse_key_space() -> (int, int):
-        key_start, key_end = find_description_line(KEYWORD_KEY_SPACE).split(",")
+        line: str or None = find_description_line(KEYWORD_KEY_SPACE)
+
+        if line is None:
+            print_error_and_stop(f"Input file is missing comment-keyword for key-space range!")
+
+        key_start, key_end = line.split(",")
+
         return int(key_start.strip()), int(key_end.strip())
 
+
     def parse_node_values() -> [int]:
-        values_str: [str] = find_description_line(KEYWORD_NODES).split(",")
+        line: str or None = find_description_line(KEYWORD_NODES)
+
+        if line is None:
+            print_error_and_stop(f"Input file is missing comment-keyword for node values!")
+
+        values_str: [str] = line.split(",")
 
         if len(values_str) == 0:
             print_error_and_stop("At least one node value is required!")
 
         return list(map(int, values_str))
 
+
     def parse_shortcuts() -> [(int, int)]:
+        line: str or None = find_description_line(KEYWORD_SHORTCUTS)
+
+        if line is None:
+            print_warning("Input file is missing comment-keyword for shortcuts.")
+            return []
+
         return [(int(start.strip()), int(end.strip()))
                 for start, end in [pair.split(":")
-                                   for pair in find_description_line(KEYWORD_SHORTCUTS).split(",")]]
+                                   for pair in line.split(",")]]
+
 
     return parse_key_space(), parse_node_values(), parse_shortcuts()
 
@@ -66,25 +88,29 @@ def parse_ring_description_no_validation(lines: [str]) -> ((int, int), [int], [(
 
     node_values = [int(piece.strip()) for piece in lines[1].split(",")]
 
-    shortcuts = [(int(source.strip(), int(target.strip())))
-                 for source, target in [piece.split(":")
-                                        for piece in lines[2].split(",")]]
+    shortcuts = ([]
+                 if len(lines) < 3
+                 else [(int(source.strip(), int(target.strip())))
+                       for source, target in [piece.split(":")
+                                              for piece in lines[2].split(",")]])
 
     return (key_min, key_max), node_values, shortcuts
 
 
 def program_loop(ring: Ring):
-    parse_entry = init_parser(ring)
+    print_info("Initiating command parser.")
+    parse_command: CommandsParser = init_command_parser(ring)
 
     print_info("Starting program loop. Enter empty command to exit.")
 
     while True:
-        entry = input("> ")
+        entry: str = input("> ")
 
         if len(entry) == 0:
+            print_info("Empty input provided. Exiting...")
             return
 
-        parse_entry(entry)
+        parse_command(entry)
 
 
 def usage():
@@ -97,7 +123,7 @@ def get_file_path_from_args(args: [str]) -> str:
         usage()
         sys.exit(1)
 
-    filename = args[1]
+    filename: str = args[1]
 
     if not os.path.exists(filename) or not os.path.isfile(filename):
         print_error_and_stop("Provided file does not exist or does not refer to a file!")
@@ -106,8 +132,10 @@ def get_file_path_from_args(args: [str]) -> str:
 
 
 def main(args: [str]):
+    input_file_path: str = get_file_path_from_args(args)
+
     print_info("Reading description from input file...")
-    description: [str] = read_ring_description(get_file_path_from_args(args))
+    description: [str] = read_ring_description(input_file_path)
 
     print_info("Parsing description...")
     (ks_start, ks_end), node_values, shortcuts = parse_ring_description(description)

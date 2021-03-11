@@ -1,158 +1,206 @@
 from functools import total_ordering
 from typing import Any
 
+from utils.printing import print_warning, print_error
+
+
+Node = 'Node'
+
 
 @total_ordering
 class Node:
-    def __init__(self, value: int, ks_min: int, ks_max: int):
-        self.value: int = value
-        self.is_leaving: bool = False
+    """ Implements the peer in the DHT ring network. """
 
-        self.__ks_min: int = ks_min
-        self.__ks_max: int = ks_max
+    def __init__(self, value: int):
+        self.__value: int = value
 
-        self.successor: Node = self
-        self.successor_next: Node = self
+        self.__successor: Node = self
+        self.__successor_next: Node = self
+
+        self.__alive: bool = True
 
         self.__keys_start: int = self.__set_keys_start(self)
 
-        self.finger_table: [Node] = []
+        self.__finger_table: [Node] = []
 
-    def prepare_to_leave(self):
-        self.is_leaving = True
 
-    def __set_keys_start(self, predecessor) -> int:
-        self.__keys_start = predecessor.value + 1
+    def get_value(self) -> int:
+        return self.__value
 
-        if self.__ks_max < self.__keys_start:
-            self.__keys_start = self.__ks_min
 
-        return self.__keys_start
+    def get_successor(self) -> Node:
+        return self.__successor
 
-    def get_keys(self) -> {int}:
-        if self.__keys_start < self.value:
-            # return list(range(self.keys_start, self.value + 1))
-            return set(range(self.__keys_start, self.value + 1))
 
-        return set(list(range(self.__keys_start, self.__ks_max + 1))
-                   + list(range(self.__ks_min, self.value + 1)))
+    def get_successor_next(self) -> Node:
+        return self.__successor_next
 
-        # keys: [int] = (list(range(self.keys_start, self.ks_max + 1))
-        #                + list(range(self.ks_min, self.value + 1)))
 
-        # if self.keys_start == self.value:
-        #     return set(keys[1:])  # to avoid the first and last element being the same
-        #
-        # return set(keys)
+    def is_alive(self) -> bool:
+        return self.__alive
 
-    def set_successors(self, successor, successor_next):
+
+    def set_successors(self, successor: Node, successor_next: Node):
         self.__set_successor(successor)
         self.__set_successor_next(successor_next)
 
-    def __set_successor(self, successor):
-        self.successor = successor
+
+    def __set_successor(self, successor: Node):
+        self.__successor = successor
         successor.__set_keys_start(self)
 
-    def __set_successor_next(self, successor_next):
-        self.successor_next = successor_next
 
-    def add_shortcut_to(self, node):
-        self.finger_table.append(node)
+    def __set_successor_next(self, successor_next: Node):
+        self.__successor_next = successor_next
 
-    def lookup(self, target_key: int, n_requests: int = 0) -> (int, int):
-        if target_key in self.get_keys():
-            return self.value, n_requests
 
-        for node in sorted(self.finger_table, key=lambda x: x.value)[::-1]:
-            if node.value <= target_key:
-                return node.lookup(target_key, n_requests + 1)
+    def __set_keys_start(self, predecessor: Node) -> int:
+        self.__keys_start = predecessor.get_value() + 1
+        return self.__keys_start
 
-        return self.successor.lookup(target_key, n_requests + 1)
 
-    def get_non_leaving_successor(self):
-        """ :return: non-leaving successor node, possibly the node itself. """
-        successor: Node = self.successor
+    def add_shortcut_by_value(self, shortcut_end_node_value: int):
+        """ Finds the end node of the shortcut, as if we don't have an actual reference to it. """
 
-        while successor is not self and successor.is_leaving:
-            successor = successor.successor
+        node, _ = self.lookup(shortcut_end_node_value)
 
-        return successor
-
-    def refresh_successors_join(self, new_successor):
-        """
-        Recursion through all the succeeding nodes, refreshing successors.
-        Starts from newly joined node.
-
-        :param new_successor: new successor node, expected to be non-leaving.
-        """
-        self.__refresh_successors_join(new_successor, starting_node_successor=new_successor)
-
-    def __refresh_successors_join(self, new_successor, starting_node_successor, starting_node=None):
-        """
-        :param new_successor: new successor node, expected to be non-leaving.
-        :param starting_node_successor: is to give incoming references to starting_node
-         (recursion starting node).
-        :param starting_node: node to mark the start of recursion.
-        """
-        if starting_node is self:
+        if node.get_value() != shortcut_end_node_value:
+            print_error("Cannot add shortcut"
+                        f" from node {self.get_value()} to node {shortcut_end_node_value},"
+                        " because shortcut end node is not present in the network.")
             return
 
-        if starting_node is None:
-            starting_node = self
+        self.add_shortcut(node)
 
-        self.__set_successor(new_successor)
 
-        new_successor_next: Node = new_successor.get_non_leaving_successor()
+    def add_shortcut(self, target_node: Node):
+        self.__finger_table.append(target_node)
 
-        if new_successor_next is starting_node_successor:
-            new_successor_next = starting_node
-            starting_node_successor = None
 
-        self.__set_successor_next(new_successor_next)
+    def list_as_str(self) -> str:
+        return str(self) + self.__successor.__list_as_str(self)
 
-        new_successor.__refresh_successors_join(new_successor_next,
-                                                starting_node_successor, starting_node)
 
-    def refresh_refs_leave(self, new_successor):
+    def __list_as_str(self, starter: Node) -> str:
+        return (""
+                if starter is self
+                else (f"\n{str(self)}" + self.__successor.__list_as_str(starter)))
+
+
+    def lookup(self, target_key: int) -> (Node or None, int):
+        return self.__lookup(target_key)
+
+
+    def __lookup(self, target_key: int, n_requests: int = 0) -> (Node or None, int):
+        if target_key in self:
+            return self, n_requests
+
+        descending_fingers: [Node] = sorted(self.__finger_table)[::-1]
+
+        for node in descending_fingers:
+            if target_key in node or self.get_value() < node.get_value() <= target_key:
+                return node.__lookup(target_key, n_requests + 1)
+
+        if target_key < self.get_value() and 0 < len(descending_fingers):
+            highest_finger: Node = descending_fingers[0]
+            if self < highest_finger:
+                return highest_finger.__lookup(target_key, n_requests + 1)
+
+        return self.__successor.__lookup(target_key, n_requests + 1)
+
+
+    def handle_joiner(self, node_value: int) -> Node or None:
         """
-        Recursion through all the succeeding nodes, refreshing successors and shortcuts.
-        Starts from any of the non-leaving nodes.
+        Handles the joining node by finding a suitable place in the ring for it,
+         and then notifying successors to refresh their own successors.
+        """
+        if self.get_value() == node_value:
+            print_warning(f"Node with value {node_value} cannot join,"
+                          " because it has already joined.")
+            return None
 
-        :param new_successor: new successor node, expected to be non-leaving.
-        """
-        self.__refresh_refs_leave(new_successor)
+        # is this a single-node ring?
+        if self == self.__successor:
+            new_node: Node = Node(node_value)
 
-    def __refresh_refs_leave(self, new_successor, starting_node=None):
-        """
-        :param new_successor: new successor node, expected to be non-leaving.
-        :param starting_node: node to mark the start of recursion.
-        """
-        if starting_node is self:
+            self.__set_successor(new_node)
+            new_node.__set_successor(self)
+
+            return new_node
+
+        successor_value: int = self.__successor.get_value()
+
+        if (self.get_value() < node_value < successor_value
+                or self.__successor < self
+                and not successor_value <= node_value <= self.get_value()):
+            new_node: Node = Node(node_value)
+
+            new_node.__set_successor(self.__successor)
+            self.__set_successor(new_node)
+            self.refresh()
+
+            return new_node
+
+        return self.__successor.handle_joiner(node_value)
+
+
+    def leave(self):
+        """ Instructions were not clear on if successor is allowed to be notified when leaving. """
+        self.__alive = False
+        self.__successor = self
+        self.__successor_next = self
+
+
+    def refresh(self):
+        """ Refreshes the successors of nodes in the ring. Checks if any successor has left. """
+        self.__refresh()
+
+
+    def __refresh(self, refresh_start: Node or None = None):
+        if self is refresh_start:
             return
 
-        if starting_node is None:
-            starting_node = self
+        self.__finger_table = [node for node in self.__finger_table if node.is_alive()]
 
-        for shortcut in list(self.finger_table):
-            if shortcut.is_leaving:
-                self.finger_table.remove(shortcut)
+        if not self.__successor.is_alive():
+            self.__set_successor(self.__find_first_alive_successor())
 
-        self.__set_successor(new_successor)
+        self.__successor.__refresh(self if refresh_start is None else refresh_start)
 
-        new_successor_next: Node = new_successor.get_non_leaving_successor()
-        self.__set_successor_next(new_successor_next)
+        self.__set_successor_next(self.__successor.get_successor())
 
-        new_successor.__refresh_refs_leave(new_successor_next, starting_node)
+
+    def __find_first_alive_successor(self) -> Node:
+        if self.__successor.is_alive():
+            return self.__successor
+
+        if self.__successor_next.is_alive():
+            return self.__successor_next
+
+
+    def __contains__(self, item: Any) -> bool:
+        if not isinstance(item, int):
+            return False
+
+        return (self.__keys_start <= item <= self.__value
+                or self.__value < self.__keys_start and not self.__value < item < self.__keys_start)
+
 
     def __str__(self) -> str:
         return self.__repr__()
 
+
     def __repr__(self) -> str:
-        shortcuts: str = ",".join(str(node.value) for node in self.finger_table)
-        return f"{self.value}:{shortcuts}, S-{self.successor.value}, NS-{self.successor_next.value}"
+        shortcuts: str = ",".join(str(node.get_value()) for node in sorted(self.__finger_table))
+
+        return f"{self.__value}:{shortcuts}," \
+               f" S-{self.__successor.__value}," \
+               f" NS-{self.__successor_next.__value}"
+
 
     def __eq__(self, other: Any) -> bool:
-        return isinstance(other, Node) and self.value == other.value
+        return isinstance(other, Node) and self.__value == other.__value
+
 
     def __lt__(self, other: Any):
-        return isinstance(other, Node) and self.value < other.value
+        return isinstance(other, Node) and self.__value < other.__value
