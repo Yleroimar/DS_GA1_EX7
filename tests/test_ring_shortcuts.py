@@ -3,16 +3,16 @@ from tests.testing_utils.asserts import *
 
 class TestRingShortcuts(AddedAsserts):
 
-    def testShortcuts00_selfLoop(self):
-        """ Just a highlighting test. Should this be allowed? """
-        self.assertRingShortcut(
-                init_ring(1, 10, [2, 4, 7, 9], [(9, 7)]),
-                4, 4,
-                "2:, S-4, NS-7",
-                "4:4, S-7, NS-9",
-                "7:, S-9, NS-2",
-                "9:7, S-2, NS-4",
-        )
+    # def testShortcuts00_selfLoop(self):
+    #     """ Just a highlighting test. Should this be allowed? """
+    #     self.assertRingShortcut(
+    #             init_ring(1, 10, [2, 4, 7, 9], [(9, 7)]),
+    #             4, 4,
+    #             "2:, S-4, NS-7",
+    #             "4:4, S-7, NS-9",
+    #             "7:, S-9, NS-2",
+    #             "9:7, S-2, NS-4",
+    #     )
 
     def testShortcuts99_example(self):
         self.assertRingShortcut(

@@ -1,43 +1,52 @@
 import random
 
 from tests.testing_utils.asserts import AddedAsserts
-
-from utils.node_old import Node
+from utils.distributed.node_ref import NodeRef
 
 
 class TestNodeComparing(AddedAsserts):
 
     def testComparing01(self):
-        self.assertEqual(Node(5, 1, 10), Node(5, 1, 10))
+        self.assertEqual(NodeRef(5), NodeRef(5))
+
 
     def testComparing02(self):
-        self.assertNotEqual(Node(3, 1, 10), Node(5, 1, 10))
+        self.assertNotEqual(NodeRef(3), NodeRef(5))
+
 
     def testComparing03(self):
-        self.assertLess(Node(2, 1, 10), Node(9, 1, 10))
+        self.assertLess(NodeRef(2), NodeRef(9))
+
 
     def testComparing04(self):
-        self.assertLessEqual(Node(4, 1, 10), Node(4, 1, 10))
+        self.assertLessEqual(NodeRef(4), NodeRef(4))
+
 
     def testComparing05(self):
-        self.assertLessEqual(Node(4, 1, 10), Node(6, 1, 10))
+        self.assertLessEqual(NodeRef(4), NodeRef(6))
+
 
     def testComparing06(self):
-        self.assertGreater(Node(9, 1, 10), Node(2, 1, 10))
+        self.assertGreater(NodeRef(9), NodeRef(2))
+
 
     def testComparing07(self):
-        self.assertGreaterEqual(Node(4, 1, 10), Node(4, 1, 10))
+        self.assertGreaterEqual(NodeRef(4), NodeRef(4))
+
 
     def testComparing08(self):
-        self.assertGreaterEqual(Node(8, 1, 10), Node(3, 1, 10))
+        self.assertGreaterEqual(NodeRef(8), NodeRef(3))
+
 
     def testComparing09_min(self):
         i = [0]
 
+
         def assert_min(expected_min_value: int, values: {int}):
             self.assertEqual(expected_min_value,
-                             min([Node(value, -9000, 9000) for value in values]).value,
+                             min([NodeRef(value) for value in values]).value,
                              msg=f"Test {i}")
+
 
         for node_values in [[2, 5, 6, 8, 9], [9, 2, 6, 5, 8]]:
             assert_min(min(node_values), node_values)

@@ -15,7 +15,8 @@ def initialize_commands(ring: Ring) -> {str: CommandImplementation}:
 
 
     def lister(_: str):
-        print(ring.list_as_str())
+        print(ring.testing_list_as_str())
+        # print(ring.list_as_str())
 
 
     command_to_implementation["List"] = lister
@@ -90,7 +91,7 @@ def initialize_commands(ring: Ring) -> {str: CommandImplementation}:
             print_error("Argument values need to be integers!")
             return
 
-        ring.add_shortcut_indirect(int(pieces[0]), int(pieces[1]))
+        ring.add_shortcut(int(pieces[0]), int(pieces[1]))
 
 
     command_to_implementation["Shortcut"] = shortcut
@@ -106,11 +107,14 @@ def initialize_commands(ring: Ring) -> {str: CommandImplementation}:
     return command_to_implementation
 
 
+def print_available_commands(command_to_implementation: {str: CommandImplementation}):
+    print_info("Available commands are:", ", ".join(command_to_implementation.keys()))
+
+
 def init_command_parser(ring: Ring) -> CommandsParser:
     command_to_implementation: {str: CommandImplementation} = initialize_commands(ring)
 
-    print_info("Available commands are:", ", ".join(command_to_implementation.keys()))
-
+    print_available_commands(command_to_implementation)
 
     def parse_entry(entry_full: str):
         pieces: [str] = entry_full.split(" ", maxsplit=1)

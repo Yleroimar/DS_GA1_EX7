@@ -1,7 +1,5 @@
 from tests.testing_utils.asserts import *
 
-from utils.ring import Ring
-
 
 class TestRingEverything(AddedAsserts):
 

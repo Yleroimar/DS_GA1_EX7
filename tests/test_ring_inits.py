@@ -42,7 +42,7 @@ class TestRingInits(AddedAsserts):
                 "10:, S-2, NS-10"
         )
 
-    def testRingInit06(self):
+    def testRingInit06_withShortcuts(self):
         self.assertRing(
                 init_ring(1, 10, [2, 5, 6, 8, 9], [(5, 2), (9, 6), (9, 2)]),
                 "2:, S-5, NS-6",
