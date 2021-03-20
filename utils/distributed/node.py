@@ -2,7 +2,10 @@ from typing import Any
 from xmlrpc.server import SimpleXMLRPCServer
 
 from utils.constants import IS_DEBUGGING
-from utils.distributed.node_ref import NodeRef, unmarshall_ref
+from utils.distributed.node_ref import NodeRef, unmarshall_node_ref
+
+
+NodeRefMarshalled = dict or NodeRef
 
 
 class Node:
@@ -44,46 +47,41 @@ class Node:
         return self.__successor_next
 
 
-    def set_successors(self, successor: NodeRef or dict, successor_next: NodeRef or dict):
+    def set_successors(self, successor: NodeRefMarshalled, successor_next: NodeRefMarshalled):
         self.set_successor(successor)
         self.set_successor_next(successor_next)
 
 
-    def set_successor(self, successor: NodeRef or dict):
-        self.__set_successor(unmarshall_ref(successor))
+    def set_successor(self, successor: NodeRefMarshalled):
+        self.__set_successor(unmarshall_node_ref(successor))
 
 
-    def set_successor_next(self, successor_next: NodeRef or dict):
-        self.__set_successor_next(unmarshall_ref(successor_next))
+    def set_successor_next(self, successor_next: NodeRefMarshalled):
+        self.__set_successor_next(unmarshall_node_ref(successor_next))
 
 
     def __set_successor(self, successor: NodeRef):
         self.__successor = successor
-        self.__notify_successor(successor)
+
+        if self.__is_self(successor):
+            self.__set_keys_start(successor)
+        else:
+            successor.notify_of_preceding(self.__reference)
 
 
     def __set_successor_next(self, successor_next: NodeRef):
         self.__successor_next = successor_next
 
 
-    def __notify_successor(self, successor: NodeRef):
-        if self.is_self(successor):
-            self.__set_keys_start(successor)
-        else:
-            successor.notify_of_preceding(self.__reference)
+    def notice_from_predecessor(self, predecessor: NodeRefMarshalled):
+        self.__set_keys_start(unmarshall_node_ref(predecessor))
 
 
-    def notice_from_predecessor(self, predecessor: NodeRef or dict):
-        self.__set_keys_start(unmarshall_ref(predecessor))
+    # def notice_from_successor(self, successor: NodeRefMarshalled):
+    #     self.__successor = unmarshall_node_ref(successor)
 
-
-    def notice_from_successor(self, successor: NodeRef or dict):
-        self.__successor = unmarshall_ref(successor)
-
-
-    def notice_from_successor_next(self, successor_next: NodeRef or dict):
-        self.__successor_next = unmarshall_ref(successor_next)
-
+    # def notice_from_successor_next(self, successor_next: NodeRefMarshalled):
+    #     self.__successor_next = unmarshall_node_ref(successor_next)
 
     def __set_keys_start(self, predecessor: NodeRef) -> int:
         self.__keys_start = predecessor.get_value() + 1
@@ -126,12 +124,12 @@ class Node:
         return self.__successor
 
 
-    def is_self(self, node: NodeRef) -> bool:
+    def __is_self(self, node: NodeRef) -> bool:
         return self.__reference == node
 
 
     def is_single_node_ring(self) -> bool:
-        return self.is_self(self.get_successor())
+        return self.__is_self(self.get_successor())
 
 
     def refresh(self):
@@ -155,15 +153,17 @@ class Node:
 
             return
 
+        if self.__is_self(self.get_successor_next()) or self.get_successor_next().is_alive():
+            return
+
         successor: NodeRef = self.get_successor()
-        if not self.is_self(self.get_successor_next()) and not self.get_successor_next().is_alive():
-            successor_next: NodeRef = successor.get_successor()
+        successor_next: NodeRef = successor.get_successor()
 
-            # check if successor has already been updated
-            if successor_next == self.get_successor_next():
-                successor_next = successor.get_successor_next()
+        # check if successor has already been updated
+        if successor_next == self.get_successor_next():
+            successor_next = successor.get_successor_next()
 
-            self.set_successor_next(successor_next)
+        self.set_successor_next(successor_next)
 
 
     @staticmethod
@@ -172,11 +172,11 @@ class Node:
 
 
     def add_shortcut(self, target: NodeRef or dict) -> bool:
-        return self.__add_shortcut(unmarshall_ref(target))
+        return self.__add_shortcut(unmarshall_node_ref(target))
 
 
     def __add_shortcut(self, target: NodeRef) -> bool:
-        if self.is_self(target):
+        if self.__is_self(target):
             return False
 
         if target in self.__finger_table:

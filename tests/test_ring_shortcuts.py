@@ -17,13 +17,14 @@ class TestRingShortcuts(AddedAsserts):
     def testShortcuts00_selfLoopB(self):
         """ Just a highlighting test. Assuming self-loops are discarded. """
         self.assertRingShortcut(
-                init_ring(1, 10, [2, 4, 7, 9], [(9, 7)]),
-                4, 4,
-                "2:, S-4, NS-7",
-                "4:, S-7, NS-9",
-                "7:, S-9, NS-2",
-                "9:7, S-2, NS-4",
+            init_ring(1, 10, [2, 4, 7, 9], [(9, 7)]),
+            4, 4,
+            "2:, S-4, NS-7",
+            "4:, S-7, NS-9",
+            "7:, S-9, NS-2",
+            "9:7, S-2, NS-4",
         )
+
 
     def testShortcuts01_startNotPresent(self):
         self.assertRingShortcut(
@@ -38,6 +39,7 @@ class TestRingShortcuts(AddedAsserts):
             "92:, S-7, NS-17",
         )
 
+
     def testShortcuts02_endNotPresent(self):
         self.assertRingShortcut(
             init_ring(1, 100, [7, 17, 22, 56, 71, 89, 92], [(22, 89)]),
@@ -50,6 +52,7 @@ class TestRingShortcuts(AddedAsserts):
             "89:, S-92, NS-7",
             "92:, S-7, NS-17",
         )
+
 
     def testShortcuts03_startAndEndNotPresent(self):
         self.assertRingShortcut(
@@ -64,6 +67,7 @@ class TestRingShortcuts(AddedAsserts):
             "92:, S-7, NS-17",
         )
 
+
     def testShortcuts04_startIsBiggerThanEnd(self):
         self.assertRingShortcut(
             init_ring(1, 100, [7, 17, 22, 56, 71, 89, 92], [(22, 89)]),
@@ -76,6 +80,7 @@ class TestRingShortcuts(AddedAsserts):
             "89:, S-92, NS-7",
             "92:22, S-7, NS-17",
         )
+
 
     def testShortcuts05_alreadyHadTheShortcut(self):
         self.assertRingShortcut(
@@ -90,6 +95,7 @@ class TestRingShortcuts(AddedAsserts):
             "92:, S-7, NS-17",
         )
 
+
     def testShortcuts06_multipleFingers(self):
         self.assertRingShortcut(
             init_ring(1, 100, [7, 17, 22, 56, 71, 89, 92], [(22, 89)]),
@@ -102,6 +108,7 @@ class TestRingShortcuts(AddedAsserts):
             "89:, S-92, NS-7",
             "92:, S-7, NS-17",
         )
+
 
     def testShortcuts99_example(self):
         self.assertRingShortcut(

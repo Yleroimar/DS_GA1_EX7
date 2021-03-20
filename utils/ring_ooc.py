@@ -22,7 +22,7 @@ class RingOOC:
         self.__ks_start, self.__ks_end = ks_bounds
 
         self.__nodes: {int: NodeRef} = dict()
-        self.__processes: {int: Process} or None = dict()
+        self.__processes: {int: Process} = dict()
         self.__start_nodes_with_successors(node_values)
 
         self.__add_shortcuts(shortcuts)

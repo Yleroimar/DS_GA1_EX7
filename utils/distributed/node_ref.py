@@ -51,11 +51,11 @@ class NodeRef:
 
 
     def get_successor(self) -> NodeRef:
-        return unmarshall_ref(self.apply_to_proxy(lambda proxy: proxy.get_successor()))
+        return unmarshall_node_ref(self.apply_to_proxy(lambda proxy: proxy.get_successor()))
 
 
     def get_successor_next(self) -> NodeRef:
-        return unmarshall_ref(self.apply_to_proxy(lambda proxy: proxy.get_successor_next()))
+        return unmarshall_node_ref(self.apply_to_proxy(lambda proxy: proxy.get_successor_next()))
 
 
     def set_successors(self, successor: NodeRef, successor_next: NodeRef):
@@ -67,7 +67,7 @@ class NodeRef:
 
 
     def ask_lookup_direction(self, target_key: int) -> NodeRef:
-        return unmarshall_ref(self.apply_to_proxy(
+        return unmarshall_node_ref(self.apply_to_proxy(
             lambda proxy: proxy.ask_lookup_direction(target_key)
         ))
 
@@ -112,5 +112,5 @@ class NodeRef:
         return hash(self.get_address())
 
 
-def unmarshall_ref(marshalled: dict or NodeRef) -> NodeRef:
+def unmarshall_node_ref(marshalled: dict or NodeRef) -> NodeRef:
     return NodeRef(**marshalled) if type(marshalled) == dict else marshalled
