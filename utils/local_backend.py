@@ -5,7 +5,7 @@ from utils.printing import print_warning, print_error
 from utils.ring_ooc import RingOOC
 
 
-class Ring:
+class LocalBackend:
     """
     Class representing the application's local back-end layer.
     Not to be confused with the distributed node-based back-end.
@@ -14,13 +14,12 @@ class Ring:
     where at each step a node returns the next node to lookup.
 
     This layer also prints errors and warnings, which occur in the distributed layer.
-    In production software the printing would be of course only in front-end (CLI in our case).
     """
 
 
-    def __init__(self, ks_bounds: (int, int), node_values: [int], shortcuts: [(int, int)]):
+    def __init__(self, ks_bounds: (int, int), ring: RingOOC):
         self.__ks_start, self.__ks_end = ks_bounds
-        self.__ooc: RingOOC = RingOOC(ks_bounds, node_values, shortcuts)
+        self.__ooc: RingOOC = ring
 
 
     def __is_in_key_space(self, key: int) -> bool:

@@ -3,7 +3,7 @@ from tests.testing_utils.asserts import *
 
 class TestRingProceedingNode(AddedAsserts):
 
-    def assertFindingProceedingNode(self, ring: Ring, node_value: int, expected_value: int = None):
+    def assertFindingProceedingNode(self, ring: LocalBackend, node_value: int, expected_value: int = None):
         self.skipTest("Deprecated")
         # proceeding = ring.find_proceeding_node(Node(node_value,
         #                                             ring.get_key_space_start(),

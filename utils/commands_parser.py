@@ -1,7 +1,7 @@
 from typing import Callable, Optional
 
 from utils.printing import print_warning, print_error, print_info
-from utils.ring import Ring
+from utils.local_backend import LocalBackend
 
 
 """ Contains code for parsing commands of the program loop. """
@@ -10,7 +10,7 @@ CommandsParser = Callable[[str], None]
 CommandImplementation = Callable[[str], None]
 
 
-def initialize_commands(ring: Ring) -> {str: CommandImplementation}:
+def initialize_commands(ring: LocalBackend) -> {str: CommandImplementation}:
     command_to_implementation: {str: CommandImplementation} = dict()
 
 
@@ -129,7 +129,7 @@ def print_available_commands(command_to_implementation: {str: CommandImplementat
     print_info("Available commands are:", ", ".join(command_to_implementation.keys()))
 
 
-def init_command_parser(ring: Ring) -> CommandsParser:
+def init_command_parser(ring: LocalBackend) -> CommandsParser:
     command_to_implementation: {str: CommandImplementation} = initialize_commands(ring)
 
     print_available_commands(command_to_implementation)

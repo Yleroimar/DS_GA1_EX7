@@ -3,10 +3,11 @@ import os
 from utils.commands_parser import init_command_parser, CommandsParser
 from utils.input_file_parser import *
 from utils.printing import *
-from utils.ring import Ring
+from utils.local_backend import LocalBackend
+from utils.ring_ooc import RingOOC
 
 
-def program_loop(ring: Ring):
+def program_loop(ring: LocalBackend):
     print_info("Initiating command parser.")
     parse_command: CommandsParser = init_command_parser(ring)
 
@@ -50,7 +51,7 @@ def main(args: [str]):
     ks_bounds, node_values, shortcuts = parse_ring_description(description)
 
     print_info("Initializing the ring...")
-    program_loop(Ring(ks_bounds, node_values, shortcuts))
+    program_loop(LocalBackend(ks_bounds, RingOOC(ks_bounds, node_values, shortcuts)))
 
 
 if __name__ == '__main__':

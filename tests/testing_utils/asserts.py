@@ -3,7 +3,8 @@ import unittest
 from typing import Callable, Set, Tuple
 
 from utils.distributed.node_ref import NodeRef
-from utils.ring import Ring
+from utils.local_backend import LocalBackend
+from utils.ring_ooc import RingOOC
 
 
 KeySetConstructor = Callable[[int, int], Tuple[Set[int], Set[int]]]
@@ -28,8 +29,10 @@ def init_key_set_constructor(ks_min: int, ks_max: int) -> KeySetConstructor:
     return key_set_constructor
 
 
-def init_ring(ks_start: int, ks_end: int, node_values: [int], shortcuts: [(int, int)]) -> Ring:
-    return Ring((ks_start, ks_end), node_values, shortcuts)
+def init_ring(ks_start: int, ks_end: int,
+              node_values: [int],
+              shortcuts: [(int, int)]) -> LocalBackend:
+    return LocalBackend((ks_start, ks_end), RingOOC((ks_start, ks_end), node_values, shortcuts))
 
 
 class AddedAsserts(unittest.TestCase):
@@ -44,7 +47,7 @@ class AddedAsserts(unittest.TestCase):
         self.assertRaises(SystemExit, action)
 
 
-    def assertRing(self, ring: Ring, *expected_listed: str, sanity_only: bool = False):
+    def assertRing(self, ring: LocalBackend, *expected_listed: str, sanity_only: bool = False):
         actual_lines = ring.testing_list_as_str().split("\n")
         n_lines = len(actual_lines)
 
@@ -65,26 +68,27 @@ class AddedAsserts(unittest.TestCase):
                              msg=f"Listing line {i + 1}")
 
 
-    def assertRingJoin(self, ring: Ring, joining: int, *expected_listed: str):
+    def assertRingJoin(self, ring: LocalBackend, joining: int, *expected_listed: str):
         ring.join(joining)
         self.assertRing(ring, *expected_listed)
 
 
-    def assertRingRemove(self, ring: Ring, removing: [int], *expected_listed: str):
+    def assertRingRemove(self, ring: LocalBackend, removing: [int], *expected_listed: str):
         self.skipTest("Not implemented.")
 
 
-    def assertRingLeave(self, ring: Ring, leaving: int, *expected_listed: str):
+    def assertRingLeave(self, ring: LocalBackend, leaving: int, *expected_listed: str):
         ring.leave(leaving)
         self.assertRing(ring, *expected_listed)
 
 
-    def assertRingShortcut(self, ring: Ring, source: int, target: int, *expected_listed: str):
+    def assertRingShortcut(self, ring: LocalBackend, source: int, target: int,
+                           *expected_listed: str):
         ring.add_shortcut(source, target)
         self.assertRing(ring, *expected_listed)
 
 
-    def assertRingLookup(self, ring: Ring, key: int, starting_value: int = None,
+    def assertRingLookup(self, ring: LocalBackend, key: int, starting_value: int = None,
                          expected_node: int = None, expected_requests: int = None):
         node, n_requests = ring.lookup(key, starting_value)
 
@@ -100,7 +104,7 @@ class AddedAsserts(unittest.TestCase):
                              f" starting from node with value {starting_value}")
 
 
-    def assertNodeKeys(self, ring: Ring, node_value: int,
+    def assertNodeKeys(self, ring: LocalBackend, node_value: int,
                        expected_keys: {int}, unexpected_keys: {int}):
         node: NodeRef = NodeRef(node_value)
 
@@ -113,7 +117,8 @@ class AddedAsserts(unittest.TestCase):
                              msg=f"Node with value {node_value} should not contain the key {key}")
 
 
-    def assertRingKeys(self, ring: Ring, values_with_expected_and_unexpected_keys: (int, {int})):
+    def assertRingKeys(self, ring: LocalBackend,
+                       values_with_expected_and_unexpected_keys: (int, {int})):
         for value, expected_keys_and_unexpected_keys in values_with_expected_and_unexpected_keys:
             expected_keys, unexpected_keys = expected_keys_and_unexpected_keys
             self.assertNodeKeys(ring, value, expected_keys, unexpected_keys)

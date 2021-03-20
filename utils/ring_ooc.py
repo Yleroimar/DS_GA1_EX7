@@ -7,7 +7,15 @@ from utils.printing import print_warning, print_error_and_stop, print_error
 
 
 class RingOOC:
-    """ Contains the Out-Of-Character (OOC) information and functionality. """
+    """
+    Contains the Out-Of-Character (OOC) information and functionality, which would not be available
+    in a real decentralized system. In other words, this class contains information and
+    functionality that breaks decentralization.
+
+    This class takes care of constructing the initial ring, starting new nodes as processes and
+    handling them (terminating on deletion). Also provides the lowest connected node and lists all
+    nodes without relying on successors.
+    """
 
 
     def __init__(self, ks_bounds: (int, int), node_values: [int], shortcuts: [(int, int)]):
@@ -65,6 +73,15 @@ class RingOOC:
         self.__processes[node.get_value()] = start_node_process(node)
 
 
+    def terminate_node(self, node: NodeRef or int):
+        node: int = node if isinstance(node, int) else node.get_value()
+
+        self.__nodes.pop(node)
+        process: Process = self.__processes.pop(node)
+        process.terminate()
+        process.join()
+
+
     def get_node(self, key: int) -> Optional[NodeRef]:
         return self.__nodes[key] if key in self else None
 
@@ -80,15 +97,6 @@ class RingOOC:
     def list_as_str(self) -> str:
         """ OOC version of listing. Only used in testing. """
         return "\n".join(str(node) for node in sorted(self.__nodes.values()))
-
-
-    def terminate_node(self, node: NodeRef or int):
-        node: int = node if isinstance(node, int) else node.get_value()
-
-        self.__nodes.pop(node)
-        process: Process = self.__processes.pop(node)
-        process.terminate()
-        process.join()
 
 
     def __contains__(self, item: Any) -> bool:
