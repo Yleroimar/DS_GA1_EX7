@@ -222,7 +222,7 @@ class Node:
 def init_node(reference: NodeRef):
     node: Node = Node(reference)
 
-    with SimpleXMLRPCServer((reference.host, reference.port),
+    with SimpleXMLRPCServer((reference.get_host(), reference.get_port()),
                             allow_none=True, logRequests=IS_DEBUGGING) as server:
         server.register_instance(node)
         server.serve_forever()

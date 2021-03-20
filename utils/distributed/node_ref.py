@@ -1,7 +1,6 @@
 import xmlrpc.client
-
 from functools import total_ordering
-from typing import Any, Callable, Optional, TypeVar
+from typing import Any, Callable, TypeVar, Tuple
 
 from utils.constants import LOCALHOST
 
@@ -10,7 +9,7 @@ def address_mapper(key: int) -> (str, int):
     return LOCALHOST, 8000 + key
 
 
-value_to_address_mapper = address_mapper
+value_to_address_mapper: Callable[[int], Tuple[str, int]] = address_mapper
 
 NodeRef = 'NodeRef'
 T = TypeVar('T')
@@ -18,27 +17,33 @@ T = TypeVar('T')
 
 @total_ordering
 class NodeRef:
-    def __init__(self, value: int, host: Optional[str] = None, port: Optional[int] = None):
+    def __init__(self, value: int):
         self.value: int = value
-
-        if host is None or port is None:
-            self.host, self.port = value_to_address_mapper(value)
-        else:
-            self.host = host
-            self.port = port
 
 
     def __init_proxy(self) -> xmlrpc.client.ServerProxy:
-        return xmlrpc.client.ServerProxy(f"http://{self.host}:{self.port}/")
+        return xmlrpc.client.ServerProxy(f"http://{self.get_host()}:{self.get_port()}/")
 
 
-    def apply_to_proxy(self, function: Callable[[xmlrpc.client.ServerProxy], T]) -> T:
+    def apply_to_proxy(self, proxy_func: Callable[[xmlrpc.client.ServerProxy], T]) -> T:
         with self.__init_proxy() as proxy:
-            return function(proxy)
+            return proxy_func(proxy)
 
 
     def get_value(self) -> int:
         return self.value
+
+
+    def get_host(self) -> str:
+        return value_to_address_mapper(self.value)[0]
+
+
+    def get_port(self) -> int:
+        return value_to_address_mapper(self.value)[1]
+
+
+    def get_address(self) -> (str, int):
+        return value_to_address_mapper(self.value)
 
 
     def get_keys_start(self) -> int:
@@ -96,7 +101,7 @@ class NodeRef:
 
 
     def __eq__(self, other: Any) -> bool:
-        return isinstance(other, NodeRef) and self.host == other.host and self.port == other.port
+        return isinstance(other, NodeRef) and self.get_address() == other.get_address()
 
 
     def __lt__(self, other: Any):
@@ -104,14 +109,8 @@ class NodeRef:
 
 
     def __hash__(self):
-        return hash((self.host, self.port))
+        return hash(self.get_address())
 
 
-    def close_server(self):
-        return self.apply_to_proxy(lambda proxy: proxy.close_server())
-
-
-def unmarshall_ref(node_ref_marshalled: dict or NodeRef) -> NodeRef:
-    return (NodeRef(**node_ref_marshalled)
-            if type(node_ref_marshalled) == dict
-            else node_ref_marshalled)
+def unmarshall_ref(marshalled: dict or NodeRef) -> NodeRef:
+    return NodeRef(**marshalled) if type(marshalled) == dict else marshalled

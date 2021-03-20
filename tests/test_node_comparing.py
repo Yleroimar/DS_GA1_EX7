@@ -44,7 +44,7 @@ class TestNodeComparing(AddedAsserts):
 
         def assert_min(expected_min_value: int, values: {int}):
             self.assertEqual(expected_min_value,
-                             min([NodeRef(value) for value in values]).value,
+                             min([NodeRef(value) for value in values]).get_value(),
                              msg=f"Test {i}")
 
 
