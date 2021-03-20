@@ -1,36 +1,9 @@
 import os
 
 from utils.commands_parser import init_command_parser, CommandsParser
+from utils.input_file_parser import *
 from utils.printing import *
 from utils.ring import Ring
-
-
-def read_ring_description(path: str) -> [str]:
-    with open(path, "r", encoding="UTF-8") as f:
-        return f.read().split("\n")
-
-
-def parse_ring_description(lines: [str]) -> ((int, int), [int], [(int, int)]):
-    """
-    :param lines: lines from the ring description file (assumed to be correctly formatted).
-    :return: a triple of key-space start/end pair, node values and shortcuts
-    """
-
-    lines = [line
-             for line in [line.strip() for line in lines]
-             if 0 < len(line) and not line.startswith("#")]
-
-    key_min, key_max = [int(piece.strip()) for piece in lines[0].split(",")]
-
-    node_values = [int(piece.strip()) for piece in lines[1].split(",")]
-
-    comma_split = [piece.split(":") for piece in lines[2].split(",")]
-    shortcuts = ([]
-                 if len(lines) < 3
-                 else [(int(source.strip()), int(target.strip()))
-                       for source, target in comma_split])
-
-    return (key_min, key_max), node_values, shortcuts
 
 
 def program_loop(ring: Ring):

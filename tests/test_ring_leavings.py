@@ -3,14 +3,13 @@ from tests.testing_utils.asserts import *
 
 class TestRingLeavings(AddedAsserts):
 
-    @unittest.expectedFailure
-    def testLeaving00_fail(self):
-        self.assertRingLeave(
-            init_ring(1, 10, [2, 9], []),
-            2,
-            "2:, S-2, NS-2"
-        )
-
+    # @unittest.expectedFailure
+    # def testLeaving00_fail(self):
+    #     self.assertRingLeave(
+    #         init_ring(1, 10, [2, 9], []),
+    #         2,
+    #         "2:, S-2, NS-2"
+    #     )
 
     def testLeaving01_cannotLeave(self):
         self.assertRingLeave(

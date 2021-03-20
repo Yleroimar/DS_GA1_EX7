@@ -1,2 +1,2 @@
-IS_DEBUGGING: bool = True
+IS_DEBUGGING: bool = False
 LOCALHOST: str = "127.0.0.1"

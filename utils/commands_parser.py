@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, Optional
 
 from utils.printing import print_warning, print_error, print_info
 from utils.ring import Ring
@@ -15,8 +15,7 @@ def initialize_commands(ring: Ring) -> {str: CommandImplementation}:
 
 
     def lister(_: str):
-        print(ring.testing_list_as_str())
-        # print(ring.list_as_str())
+        print(ring.list_as_str())
 
 
     command_to_implementation["List"] = lister
@@ -37,10 +36,15 @@ def initialize_commands(ring: Ring) -> {str: CommandImplementation}:
             print_error("Argument values need to be integers!")
             return
 
-        node, n_requests = ring.lookup(int(pieces[0]),
-                                       None if len(pieces) == 1 else int(pieces[1]))
+        target_key: int = int(pieces[0])
+        starting_node: Optional[int] = None if len(pieces) == 1 else int(pieces[1])
 
-        print(f"Result: Data stored in node {node.get_value()} - {n_requests} requests sent.")
+        node, n_requests = ring.lookup(target_key, starting_node)
+
+        if node is None:
+            print_info(f"Could not find the key {target_key}.")
+        else:
+            print(f"Result: Data stored in node {node.get_value()} - {n_requests} requests sent.")
 
 
     command_to_implementation["Lookup"] = lookup
@@ -55,7 +59,12 @@ def initialize_commands(ring: Ring) -> {str: CommandImplementation}:
             print_error(f"Join command received non-integer argument: '{args_part}'.")
             return
 
-        ring.join(int(args_part))
+        joiner_value: int = int(args_part)
+
+        print_info(f"Node with value {joiner_value} is trying to join the ring.")
+        print_info(f"Node with value {joiner_value} has "
+                   + ("successfully joined" if ring.join(joiner_value) else "not joined")
+                   + " the ring.")
 
 
     command_to_implementation["Join"] = join
@@ -70,7 +79,14 @@ def initialize_commands(ring: Ring) -> {str: CommandImplementation}:
             print_error(f"Leave command received non-integer argument: '{args_part}'.")
             return
 
-        ring.leave(int(args_part))
+        leaver_value: int = int(args_part)
+
+        print_info(f"Node with value {leaver_value} is trying to leave the ring.")
+        print_info(f"Node with value {leaver_value} "
+                   + ("has successfully"
+                      if ring.leave(leaver_value)
+                      else "could not or had already")
+                   + " left the ring.")
 
 
     command_to_implementation["Leave"] = leave
@@ -91,16 +107,18 @@ def initialize_commands(ring: Ring) -> {str: CommandImplementation}:
             print_error("Argument values need to be integers!")
             return
 
-        ring.add_shortcut(int(pieces[0]), int(pieces[1]))
+        start, end = int(pieces[0]), int(pieces[1])
+
+        print_info(f"Trying to add a shortcut from node {start} to node {end}.")
+        print_info(f"Shortcut from node {start} to node {end} "
+                   + ("was" if ring.add_shortcut(start, end) else "could not be")
+                   + " added to the ring.")
 
 
     command_to_implementation["Shortcut"] = shortcut
 
-
-    def remove(args_part: str):
-        print_error("Command 'Remove' is not implemented")
-        # ring.leave([int(value_str.strip()) for value_str in args_part.split(",")])
-
+    # def remove(args_part: str):
+    #     print_error("Command 'Remove' is not implemented")
 
     # command_to_implementation["Remove"] = remove
 
@@ -116,6 +134,7 @@ def init_command_parser(ring: Ring) -> CommandsParser:
 
     print_available_commands(command_to_implementation)
 
+
     def parse_entry(entry_full: str):
         pieces: [str] = entry_full.split(" ", maxsplit=1)
 
@@ -123,8 +142,10 @@ def init_command_parser(ring: Ring) -> CommandsParser:
 
         if command not in command_to_implementation:
             print_warning(f"No such command: '{command}'.")
-        else:
-            command_to_implementation[command]("" if len(pieces) == 1 else pieces[1].strip())
+            print_available_commands(command_to_implementation)
+            return
+
+        command_to_implementation[command]("" if len(pieces) == 1 else pieces[1].strip())
 
 
     return parse_entry

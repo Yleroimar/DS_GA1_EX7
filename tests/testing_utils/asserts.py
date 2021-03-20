@@ -37,7 +37,11 @@ class AddedAsserts(unittest.TestCase):
 
 
     def tearDown(self) -> None:
-        gc.collect()
+        gc.collect()  # need to free up resources otherwise tests are gonna conflict with each other
+
+
+    def assertExit(self, action: callable):
+        self.assertRaises(SystemExit, action)
 
 
     def assertRing(self, ring: Ring, *expected_listed: str, sanity_only: bool = False):
@@ -70,9 +74,6 @@ class AddedAsserts(unittest.TestCase):
         self.skipTest("Not implemented.")
 
 
-    #     # ring.leave(removing)
-    #     # self.assertRing(ring, *expected_listed)
-
     def assertRingLeave(self, ring: Ring, leaving: int, *expected_listed: str):
         ring.leave(leaving)
         self.assertRing(ring, *expected_listed)
@@ -80,7 +81,6 @@ class AddedAsserts(unittest.TestCase):
 
     def assertRingShortcut(self, ring: Ring, source: int, target: int, *expected_listed: str):
         ring.add_shortcut(source, target)
-        # ring.add_shortcut_direct(source, target)
         self.assertRing(ring, *expected_listed)
 
 

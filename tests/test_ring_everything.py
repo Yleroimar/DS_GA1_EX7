@@ -14,14 +14,14 @@ class TestRingEverything(AddedAsserts):
                          [(5, 56), (5, 71), (22, 89)])
 
         self.assertRing(
-                ring,
-                "5:56,71, S-17, NS-22",
-                "17:, S-22, NS-56",
-                "22:89, S-56, NS-71",
-                "56:, S-71, NS-89",
-                "71:, S-89, NS-92",
-                "89:, S-92, NS-5",
-                "92:, S-5, NS-17"
+            ring,
+            "5:56,71, S-17, NS-22",
+            "17:, S-22, NS-56",
+            "22:89, S-56, NS-71",
+            "56:, S-71, NS-89",
+            "71:, S-89, NS-92",
+            "89:, S-92, NS-5",
+            "92:, S-5, NS-17"
         )
 
         self.assertRingKeys(ring, [
@@ -41,15 +41,15 @@ class TestRingEverything(AddedAsserts):
                               expected_node=89, expected_requests=2)
 
         self.assertRingJoin(
-                ring, 7,
-                "5:56,71, S-7, NS-17",
-                "7:, S-17, NS-22",
-                "17:, S-22, NS-56",
-                "22:89, S-56, NS-71",
-                "56:, S-71, NS-89",
-                "71:, S-89, NS-92",
-                "89:, S-92, NS-5",
-                "92:, S-5, NS-7",
+            ring, 7,
+            "5:56,71, S-7, NS-17",
+            "7:, S-17, NS-22",
+            "17:, S-22, NS-56",
+            "22:89, S-56, NS-71",
+            "56:, S-71, NS-89",
+            "71:, S-89, NS-92",
+            "89:, S-92, NS-5",
+            "92:, S-5, NS-7",
         )
 
         self.assertRingKeys(ring, [
@@ -64,14 +64,14 @@ class TestRingEverything(AddedAsserts):
         ])
 
         self.assertRingLeave(
-                ring, 5,
-                "7:, S-17, NS-22",
-                "17:, S-22, NS-56",
-                "22:89, S-56, NS-71",
-                "56:, S-71, NS-89",
-                "71:, S-89, NS-92",
-                "89:, S-92, NS-7",
-                "92:, S-7, NS-17"
+            ring, 5,
+            "7:, S-17, NS-22",
+            "17:, S-22, NS-56",
+            "22:89, S-56, NS-71",
+            "56:, S-71, NS-89",
+            "71:, S-89, NS-92",
+            "89:, S-92, NS-7",
+            "92:, S-7, NS-17"
         )
 
         self.assertRingKeys(ring, [
@@ -85,14 +85,14 @@ class TestRingEverything(AddedAsserts):
         ])
 
         self.assertRingShortcut(
-                ring, 7, 22,
-                "7:22, S-17, NS-22",
-                "17:, S-22, NS-56",
-                "22:89, S-56, NS-71",
-                "56:, S-71, NS-89",
-                "71:, S-89, NS-92",
-                "89:, S-92, NS-7",
-                "92:, S-7, NS-17",
+            ring, 7, 22,
+            "7:22, S-17, NS-22",
+            "17:, S-22, NS-56",
+            "22:89, S-56, NS-71",
+            "56:, S-71, NS-89",
+            "71:, S-89, NS-92",
+            "89:, S-92, NS-7",
+            "92:, S-7, NS-17",
         )
 
         self.assertRingKeys(ring, [

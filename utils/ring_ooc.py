@@ -1,5 +1,5 @@
 from multiprocessing import Process
-from typing import Any
+from typing import Any, Optional
 
 from utils.distributed.node_process import start_node_process
 from utils.distributed.node_ref import NodeRef
@@ -65,7 +65,7 @@ class RingOOC:
         self.__processes[node.get_value()] = start_node_process(node)
 
 
-    def get_node(self, key: int) -> NodeRef or None:
+    def get_node(self, key: int) -> Optional[NodeRef]:
         return self.__nodes[key] if key in self else None
 
 

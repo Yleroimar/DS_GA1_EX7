@@ -23,6 +23,7 @@ class TestNodeKeys(AddedAsserts):
             (92, ks_constructor(90, 92)),
         ])
 
+
     def testKeys99_example2(self):
         ks_min = 1
         ks_max = 100
@@ -44,6 +45,7 @@ class TestNodeKeys(AddedAsserts):
             (92, key_set(90, 92)),
         ])
 
+
     def testKeys99_example3(self):
         ks_min = 1
         ks_max = 100
@@ -63,6 +65,7 @@ class TestNodeKeys(AddedAsserts):
             (89, key_set(72, 89)),
             (92, key_set(90, 92)),
         ])
+
 
     def testKeys99_example4(self):
         ks_min = 1

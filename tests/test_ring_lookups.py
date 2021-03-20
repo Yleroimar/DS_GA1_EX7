@@ -85,5 +85,3 @@ class TestRingLookups(AddedAsserts):
             key=87, starting_value=None,
             expected_node=89, expected_requests=2
         )
-
-    # TODO: add more tests?

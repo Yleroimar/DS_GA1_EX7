@@ -1,7 +1,7 @@
 import xmlrpc.client
 
 from functools import total_ordering
-from typing import Any, Callable
+from typing import Any, Callable, Optional, TypeVar
 
 from utils.constants import LOCALHOST
 
@@ -13,11 +13,12 @@ def address_mapper(key: int) -> (str, int):
 value_to_address_mapper = address_mapper
 
 NodeRef = 'NodeRef'
+T = TypeVar('T')
 
 
 @total_ordering
 class NodeRef:
-    def __init__(self, value: int, host: str = None, port: int = None):
+    def __init__(self, value: int, host: Optional[str] = None, port: Optional[int] = None):
         self.value: int = value
 
         if host is None or port is None:
@@ -31,7 +32,7 @@ class NodeRef:
         return xmlrpc.client.ServerProxy(f"http://{self.host}:{self.port}/")
 
 
-    def apply_to_proxy(self, function: Callable[[xmlrpc.client.ServerProxy], Any]) -> Any:
+    def apply_to_proxy(self, function: Callable[[xmlrpc.client.ServerProxy], T]) -> T:
         with self.__init_proxy() as proxy:
             return function(proxy)
 
@@ -56,12 +57,6 @@ class NodeRef:
         self.apply_to_proxy(lambda proxy: proxy.set_successors(successor, successor_next))
 
 
-    # def set_successor(self, successor: NodeRef):
-    #     return self.apply_to_proxy(lambda proxy: proxy.set_successor(successor))
-
-    # def set_successor_next(self, successor_next: NodeRef):
-    #     return self.apply_to_proxy(lambda proxy: proxy.set_successor_next(successor_next))
-
     def notify_of_preceding(self, predecessor: NodeRef):
         self.apply_to_proxy(lambda proxy: proxy.notice_from_predecessor(predecessor))
 
@@ -84,7 +79,7 @@ class NodeRef:
             return False
 
 
-    def add_shortcut(self, target: NodeRef):
+    def add_shortcut(self, target: NodeRef) -> bool:
         return self.apply_to_proxy(lambda proxy: proxy.add_shortcut(target))
 
 

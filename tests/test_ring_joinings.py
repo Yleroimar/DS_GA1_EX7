@@ -118,5 +118,3 @@ class TestRingJoins(AddedAsserts):
             "89:, S-92, NS-5",
             "92:, S-5, NS-7",
         )
-
-        # TODO: add more tests?

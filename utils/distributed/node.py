@@ -6,6 +6,17 @@ from utils.distributed.node_ref import NodeRef, unmarshall_ref
 
 
 class Node:
+    """
+    Nodes act as peers in the ring.
+
+    The nodes mostly just form the structure of the ring and hold the keys (and irl also data).
+    The nodes have very little other functionality attached to them. Other functionality includes
+    local-refreshing of references to successors and giving directions on lookup.
+
+    In order to prevent deadlocks and blocking of the ring, recursive requests are not used.
+    """
+
+
     def __init__(self, reference: NodeRef):
         self.__reference: NodeRef = reference
 
@@ -15,22 +26,6 @@ class Node:
         self.__keys_start: int = self.__set_keys_start(self.__reference)
 
         self.__finger_table: [NodeRef] = []
-
-        self.__initialize_server(reference)
-
-
-    def __initialize_server(self, reference: NodeRef):
-        with SimpleXMLRPCServer((reference.host, reference.port),
-                                allow_none=True, logRequests=IS_DEBUGGING) as server:
-            for method in [
-                self.get_value, self.get_keys_start, self.get_successor, self.get_successor_next,
-                self.set_successors, self.set_successor, self.set_successor_next,
-                self.ask_lookup_direction, self.contains, self.refresh, self.add_shortcut,
-                self.notice_from_predecessor, self.__contains__, self.to_string, self.ping
-            ]:
-                server.register_function(method)
-
-            server.serve_forever()
 
 
     def get_value(self) -> int:
@@ -96,10 +91,19 @@ class Node:
 
 
     def ask_lookup_direction(self, target_key: int) -> NodeRef:
+        """
+        First we check if the node has the key.
+        Then we check if any of the fingers have the key or if they get us closer to the target key.
+        Finally we pass the successor node as the next node to look up.
+
+        :param target_key: key value that is being searched for.
+        :return: reference to self if the key is here, otherwise next node to look up.
+        """
+
         if target_key in self:
             return self.__reference
 
-        value = self.get_value()
+        value: int = self.get_value()
 
         descending_fingers: [NodeRef] = sorted(self.__finger_table)[::-1]
 
@@ -131,12 +135,14 @@ class Node:
 
 
     def refresh(self):
-        self.__finger_table = [finger for finger in self.__finger_table if finger.is_alive()]
+        self.__finger_table: [NodeRef] = [finger
+                                          for finger in self.__finger_table
+                                          if finger.is_alive()]
 
-        self.__refresh_successors()
+        self.__refresh_successors_references()
 
 
-    def __refresh_successors(self):
+    def __refresh_successors_references(self):
         # single-node-ring
         if self.is_single_node_ring():
             return
@@ -149,9 +155,9 @@ class Node:
 
             return
 
-        successor = self.get_successor()
+        successor: NodeRef = self.get_successor()
         if not self.is_self(self.get_successor_next()) and not self.get_successor_next().is_alive():
-            successor_next = successor.get_successor()
+            successor_next: NodeRef = successor.get_successor()
 
             # check if successor has already been updated
             if successor_next == self.get_successor_next():
@@ -165,15 +171,19 @@ class Node:
         return True
 
 
-    def add_shortcut(self, target: NodeRef or dict):
-        self.__add_shortcut(unmarshall_ref(target))
+    def add_shortcut(self, target: NodeRef or dict) -> bool:
+        return self.__add_shortcut(unmarshall_ref(target))
 
 
-    def __add_shortcut(self, target: NodeRef):
+    def __add_shortcut(self, target: NodeRef) -> bool:
         if self.is_self(target):
-            return
+            return False
+
+        if target in self.__finger_table:
+            return False
 
         self.__finger_table.append(target)
+        return True
 
 
     def contains(self, item: Any) -> bool:
@@ -184,8 +194,8 @@ class Node:
         if not isinstance(item, int):
             return False
 
-        keys_end = self.get_value()
-        keys_start = self.__keys_start
+        keys_end: int = self.get_value()
+        keys_start: int = self.__keys_start
 
         return (keys_start <= item <= keys_end  # trivial check
                 # if key range is cross-seam (if start is bigger than end)
@@ -210,4 +220,9 @@ class Node:
 
 
 def init_node(reference: NodeRef):
-    Node(reference)
+    node: Node = Node(reference)
+
+    with SimpleXMLRPCServer((reference.host, reference.port),
+                            allow_none=True, logRequests=IS_DEBUGGING) as server:
+        server.register_instance(node)
+        server.serve_forever()
