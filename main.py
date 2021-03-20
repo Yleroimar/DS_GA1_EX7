@@ -1,10 +1,10 @@
 import os
 
-from utils.commands_parser import init_command_parser, CommandsParser
-from utils.input_file_parser import *
-from utils.printing import *
-from utils.local_backend import LocalBackend
-from utils.ring_ooc import RingOOC
+from src.commands_parser import init_command_parser, CommandsParser
+from src.input_file_parser import *
+from src.printing import *
+from src.local_backend import LocalBackend
+from src.ring_ooc import RingOOC
 
 
 def program_loop(ring: LocalBackend):

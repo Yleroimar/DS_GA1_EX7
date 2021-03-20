@@ -2,7 +2,7 @@ import xmlrpc.client
 from functools import total_ordering
 from typing import Any, Callable, TypeVar, Tuple
 
-from utils.constants import LOCALHOST
+from src.constants import LOCALHOST
 
 
 def address_mapper(key: int) -> (str, int):

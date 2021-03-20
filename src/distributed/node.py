@@ -1,8 +1,8 @@
 from typing import Any
 from xmlrpc.server import SimpleXMLRPCServer
 
-from utils.constants import IS_DEBUGGING
-from utils.distributed.node_ref import NodeRef, unmarshall_node_ref
+from src.constants import IS_DEBUGGING
+from src.distributed.node_ref import NodeRef, unmarshall_node_ref
 
 
 NodeRefMarshalled = dict or NodeRef

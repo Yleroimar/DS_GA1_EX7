@@ -1,9 +1,9 @@
 from multiprocessing import Process
 from typing import Any, Optional
 
-from utils.distributed.node_process import start_node_process
-from utils.distributed.node_ref import NodeRef
-from utils.printing import print_warning, print_error_and_stop, print_error
+from src.distributed.node_process import start_node_process
+from src.distributed.node_ref import NodeRef
+from src.printing import print_warning, print_error_and_stop, print_error
 
 
 class RingOOC:

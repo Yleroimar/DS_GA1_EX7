@@ -1,10 +1,12 @@
 import gc
+import time
 import unittest
 from typing import Callable, Set, Tuple
 
-from utils.distributed.node_ref import NodeRef
-from utils.local_backend import LocalBackend
-from utils.ring_ooc import RingOOC
+from src.constants import TESTS_SLEEP_INTERVAL
+from src.distributed.node_ref import NodeRef
+from src.local_backend import LocalBackend
+from src.ring_ooc import RingOOC
 
 
 KeySetConstructor = Callable[[int, int], Tuple[Set[int], Set[int]]]
@@ -41,6 +43,7 @@ class AddedAsserts(unittest.TestCase):
 
     def tearDown(self) -> None:
         gc.collect()  # need to free up resources otherwise tests are gonna conflict with each other
+        time.sleep(TESTS_SLEEP_INTERVAL)
 
 
     def assertExit(self, action: callable):

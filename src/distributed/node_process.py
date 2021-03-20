@@ -1,7 +1,7 @@
 import multiprocessing as mp
 
-from utils.distributed.node_ref import NodeRef
-from utils.distributed.node import init_node
+from src.distributed.node_ref import NodeRef
+from src.distributed.node import init_node
 
 
 def start_node_process(reference: NodeRef) -> mp.Process:

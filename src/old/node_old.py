@@ -1,7 +1,7 @@
 from functools import total_ordering
 from typing import Any
 
-from utils.printing import print_warning, print_error
+from src.printing import print_warning, print_error
 
 
 Node = 'Node'

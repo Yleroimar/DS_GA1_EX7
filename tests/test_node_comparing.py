@@ -1,7 +1,7 @@
 import random
 
 from tests.testing_utils.asserts import AddedAsserts
-from utils.distributed.node_ref import NodeRef
+from src.distributed.node_ref import NodeRef
 
 
 class TestNodeComparing(AddedAsserts):

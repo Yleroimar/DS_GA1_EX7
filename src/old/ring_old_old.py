@@ -1,5 +1,5 @@
-from utils.old.node_old_old import Node
-from utils.printing import print_error, print_warning, print_error_and_stop
+from src.old.node_old_old import Node
+from src.printing import print_error, print_warning, print_error_and_stop
 
 
 class RingOld:

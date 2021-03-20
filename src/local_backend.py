@@ -1,8 +1,8 @@
 from typing import Optional
 
-from utils.distributed.node_ref import NodeRef
-from utils.printing import print_warning, print_error
-from utils.ring_ooc import RingOOC
+from src.distributed.node_ref import NodeRef
+from src.printing import print_warning, print_error
+from src.ring_ooc import RingOOC
 
 
 class LocalBackend:

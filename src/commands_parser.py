@@ -1,7 +1,7 @@
 from typing import Callable, Optional
 
-from utils.printing import print_warning, print_error, print_info
-from utils.local_backend import LocalBackend
+from src.printing import print_warning, print_error, print_info
+from src.local_backend import LocalBackend
 
 
 """ Contains code for parsing commands of the program loop. """
