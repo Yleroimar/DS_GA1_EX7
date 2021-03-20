@@ -90,6 +90,15 @@ class TestRingJoins(AddedAsserts):
             "9:, S-2, NS-4"
         )
 
+    def testJoins08(self):
+        self.assertRingJoin(
+            init_ring(1, 100, [92, 100], [(92, 100), (100, 92)]),
+            1,
+            "1:, S-92, NS-100",
+            "92:100, S-100, NS-1",
+            "100:92, S-1, NS-92"
+        )
+
 
     def testJoins99(self):
         self.assertRingJoin(

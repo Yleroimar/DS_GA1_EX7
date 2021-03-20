@@ -226,3 +226,4 @@ def init_node(reference: NodeRef):
                             allow_none=True, logRequests=IS_DEBUGGING) as server:
         server.register_instance(node)
         server.serve_forever()
+        print(f"{reference} closing.")

@@ -107,6 +107,10 @@ class NodeRef:
         return hash((self.host, self.port))
 
 
+    def close_server(self):
+        return self.apply_to_proxy(lambda proxy: proxy.close_server())
+
+
 def unmarshall_ref(node_ref_marshalled: dict or NodeRef) -> NodeRef:
     return (NodeRef(**node_ref_marshalled)
             if type(node_ref_marshalled) == dict

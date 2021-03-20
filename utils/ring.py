@@ -91,7 +91,7 @@ class Ring:
             starting_value: int = self.__ooc.get_lowest_node_value()
 
         if starting_value not in self.__ooc:
-            print_error(f"Lookup starting node with value {target_key} is not connected!")
+            print_error(f"The lookup starting node with value {starting_value} is not connected!")
             return None, 0
 
         return self.__perform_lookup(target_key, self.__ooc.get_node(starting_value))
@@ -113,7 +113,7 @@ class Ring:
 
 
     def __get_previous_key(self, key: int) -> int:
-        assert self.__ks_start <= key <= self.__ks_end
+        assert self.__ks_start <= key <= self.__ks_end + 1
 
         key -= 1
 
@@ -200,7 +200,7 @@ class Ring:
         the key. At the start of the lookup node 5 has keys in range [93, 5], but has [90, 5] once
         node 89 notices unresponsive node 92 and performs a refresh.
 
-        :param value: leaving node value
+        :param value: leaving node value.
         :return: whether leaving was successful or not.
         """
 
@@ -215,12 +215,12 @@ class Ring:
             return False
 
         self.__ooc.terminate_node(value)
-        self.refresh()
+        self.__refresh()
 
         return True
 
 
-    def refresh(self):
+    def __refresh(self):
         """ Here we perform a ring-wide refresh. """
         starting_node: NodeRef = self.__get_local_node()
         current_node: NodeRef = starting_node
