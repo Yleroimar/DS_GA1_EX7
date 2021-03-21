@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import os
 
 from src.commands_parser import init_command_parser, CommandsParser
